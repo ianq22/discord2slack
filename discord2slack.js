@@ -99,6 +99,7 @@ discord_client.on('message', function(message) {
 			var attachments = message.attachments.array();
 			attachments.forEach(a => { content += "\n" + a.url; });	
 		}
+		content = content.replace('!mods', '<!here>');
 		debug("Discord --> " + message.author.username + ": " + content);
 		if (SLACK_CHANNEL_PRIVATE) {
 			slack_client.postMessageToGroup(SLACK_CHANNEL, message.author.username + ": " + content);
