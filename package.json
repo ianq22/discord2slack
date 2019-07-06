@@ -11,6 +11,7 @@
   "license": "BSD",
   "dependencies": {
     "discord.js": "^11.3.2",
+    "properties-reader": "^0.2.0",
     "slackbots": "^1.1.0"
   }
 }

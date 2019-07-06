@@ -18,13 +18,17 @@
 
 
 // -----------------------------Configurable section-----------------------------
+const PropertiesReader = require('properties-reader');
+const prop = PropertiesReader('app.properties');
+getProperty = (pty) => {return prop.get(pty);}
+
 const DEBUG = true;
 
-const DISCORD_TOKEN         = '';
-const DISCORD_CHANNEL       = '';
-const DISCORD_CHANNELID     = '';
-const SLACK_TOKEN           = '';
-const SLACK_CHANNEL         = '';
+const DISCORD_TOKEN         = getProperty('discord.token');
+const DISCORD_CHANNEL       = getProperty('discord.channel');
+const DISCORD_CHANNELID     = getProperty('discord.channelId');
+const SLACK_TOKEN           = getProperty('slack.token');
+const SLACK_CHANNEL         = getProperty('slack.channel');
 const SLACK_CHANNEL_PRIVATE = false;
 // ------------------------------------------------------------------------------
 
