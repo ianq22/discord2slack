@@ -121,8 +121,8 @@ slack_client.on('message', function(message) {
 			{
 				username = elem.name;
 				realname = elem.real_name;
-				debug("Slack  --> " + realname + " (" + username + ") : " + message.text);
-				discord_channel.send(realname + " (" + username + ") : " + message.text);
+				debug("Slack  --> " + username + " (" + username + ") : " + message.text);
+				discord_channel.send(username + " : " + message.text);
 			}
 		});
 	}
