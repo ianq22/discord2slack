@@ -52,7 +52,7 @@ if (discord_config_invalid || slack_config_invalid) {
 const Discord = require('discord.js');
 const discord_client = new Discord.Client();
 const SlackBot = require('slackbots');
-const slack_client = new SlackBot({token: SLACK_TOKEN, name: 'discord-connector'});
+const slack_client = new SlackBot({token: SLACK_TOKEN, name: 'Discord'});
 
 var discord_channel;
 
@@ -122,7 +122,7 @@ slack_client.on('message', function(message) {
 				username = elem.name;
 				realname = elem.real_name;
 				debug("Slack  --> " + username + " (" + username + ") : " + message.text);
-				discord_channel.send(username + " : " + message.text);
+				discord_channel.send(realname + " : " + message.text);
 			}
 		});
 	}
