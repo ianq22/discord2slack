@@ -129,7 +129,7 @@ slack_client.on('message', function(message) {
 		//We have to find the user name/nickname by ourselves though
 		slack_client.getUsers()._value.members.forEach(function(elem){
 			
-			if (elem.id === message.user && elem.name !== 'modbot')
+			if (elem.id === message.user && elem.name !== 'modbot' && elem.name !== 'discordbot')
 			{
 				username = elem.name;
 				realname = elem.real_name;
