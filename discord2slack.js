@@ -144,7 +144,7 @@ slack_client.on('message', function(message) {
 			}
 		});
 
-		if (messageToSend !== message.text)
+		if (messageToSend !== message.text && elem.name !== 'modbot' && elem.name !== 'discordbot')
 		{
 			discord_channel.send(messageToSend);
 		}
