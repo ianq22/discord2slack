@@ -91,8 +91,7 @@ discord_client.on('message', function(message) {
 	if (message.channel.id !== DISCORD_CHANNELID && message.channel.name !== DISCORD_CHANNEL) { return; }
 	//Avoiding re-sending a message we just received from Slack
 	//(event gets triggered even if it's a msg *we* sent to the chat)
-	if (message.author.username != discord_client.user.username)
-	{
+	if (message.author.username != discord_client.user.username) {
 		//Check for atachements (files/images/etc.)
 		var content = message.content;
 		if (message.attachments != null) {
@@ -100,31 +99,55 @@ discord_client.on('message', function(message) {
 			attachments.forEach(a => { content += "\n" + a.url; });	
 		}
 		content = content.replace('!mods', '<!here>');
+
+		//Replace any mentioned Users with their user names
+		discord_client.users.forEach(function(someUser) {
+			console.log(someUser.id);
+
+			if (content.includes(someUser.id) && someUser.id.length === 18) {
+				content = content.replace(someUser.id, someUser.username);
+			}
+		});
+
 		debug("Discord --> " + message.author.username + ": " + content);
 		if (SLACK_CHANNEL_PRIVATE) {
-			slack_client.postMessageToGroup(SLACK_CHANNEL, message.author.username + ": " + content);
+			slack_client.postMessageToGroup(SLACK_CHANNEL, message.author.username + ": " + content, {as_user: true});
 		} else {
-			slack_client.postMessageToChannel(SLACK_CHANNEL, message.author.username + ": " + content);
+			slack_client.postMessageToChannel(SLACK_CHANNEL, message.author.username + ": " + content, {as_user: true});
 		}
 	}
 });
 
 //Redirect Slack client to Discord
 slack_client.on('message', function(message) {
-	if (message.type == "message")
+	var messageToSend = message.text;
+
+	if (message.type === "message")
 	{
 		//Unlike Discord, event doesn't get triggered if it is a msg we sent
 
 		//We have to find the user name/nickname by ourselves though
 		slack_client.getUsers()._value.members.forEach(function(elem){
-			if (elem.id == message.user)
+			
+			if (elem.id === message.user && elem.name !== 'modbot')
 			{
 				username = elem.name;
 				realname = elem.real_name;
 				debug("Slack  --> " + username + " (" + username + ") : " + message.text);
-				discord_channel.send(realname + " : " + message.text);
+				messageToSend = realname + " : " + message.text;
+			}
+
+			//If we have a user mention in the text replace it with the users name and strip out the <> characters
+			if (messageToSend.includes(elem.id))
+			{
+				messageToSend = messageToSend.replace('<@' + elem.id + '>', '@' + elem.name);
 			}
 		});
+
+		if (messageToSend !== message.text)
+		{
+			discord_channel.send(messageToSend);
+		}
 	}
 });
 
