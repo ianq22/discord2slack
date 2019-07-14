@@ -29,22 +29,22 @@ const DISCORD_CHANNEL       = getProperty('discord.channel');
 const DISCORD_CHANNELID     = getProperty('discord.channelId');
 const SLACK_TOKEN           = getProperty('slack.token');
 const SLACK_CHANNEL         = getProperty('slack.channel');
-const SLACK_CHANNEL_PRIVATE = false;
+const SLACK_CHANNEL_PRIVATE = getProperty('slack.channel.private') === 'true';
 // ------------------------------------------------------------------------------
 
 //Check if config is valid
 var discord_token_not_set = DISCORD_TOKEN === '';
 var discord_channel_not_set = DISCORD_CHANNEL === '' && DISCORD_CHANNELID === '';
-var slack_token_not_set = SLACK_TOKEN === "";
-var slack_channel_not_set = SLACK_CHANNEL === "";
+var slack_token_not_set = SLACK_TOKEN === '';
+var slack_channel_not_set = SLACK_CHANNEL === '';
 
 var discord_config_invalid = discord_token_not_set || discord_channel_not_set;
 var slack_config_invalid = slack_token_not_set || slack_channel_not_set;
 
 if (discord_config_invalid || slack_config_invalid) {
-	console.log ((discord_config_invalid ? "Discord config" : "Slack config") + " is invalid");
-	console.log("You need to configure your Discord and Slack tokens and channels" +
-	            "in the file discord2slack.js. It's right in the header.");
+	console.log ((discord_config_invalid ? 'Discord config' : 'Slack config') + ' is invalid');
+	console.log('You need to configure your Discord and Slack tokens and channels' +
+	            'in the file discord2slack.js. It\'s right in the header.');
 	process.exit(1);
 }
 
@@ -67,21 +67,21 @@ discord_client.on('ready', function(){
 	var value = DISCORD_CHANNEL !== "" ? DISCORD_CHANNEL : DISCORD_CHANNELID;
 	var potential_channels = discord_client.channels.findAll(param, value);
 	if (potential_channels.length === 0) {
-		console.log("Error: No Discord channels with " + param + " " + value + " found.");
+		console.log('Error: No Discord channels with ' + param + ' ' + value + ' found.');
 		process.exit(1);
 	}
 	if (potential_channels.length > 1) {
-		console.log("Warning: More than 1 Discord channel with " + param + " " + value + " found.");
-		console.log("Defaulting to first one found");
+		console.log('Warning: More than 1 Discord channel with ' + param +  ' + value +  found.');
+		console.log('Defaulting to first one found');
 	}
 
 	//Channel found
 	discord_channel = potential_channels[0];
-	console.log("Discord connected");
+	console.log('Discord connected');
 });
 
 slack_client.on('start', function() {
-	console.log("Slack connected");
+	console.log('Slack connected');
 });
 
 //Redirect Discord messages to Slack
@@ -102,18 +102,16 @@ discord_client.on('message', function(message) {
 
 		//Replace any mentioned Users with their user names
 		discord_client.users.forEach(function(someUser) {
-			console.log(someUser.id);
-
 			if (content.includes(someUser.id) && someUser.id.length === 18) {
 				content = content.replace(someUser.id, someUser.username);
 			}
 		});
 
-		debug("Discord --> " + message.author.username + ": " + content);
+		debug('Discord --> ' + message.author.username + ' : ' + content);
 		if (SLACK_CHANNEL_PRIVATE) {
-			slack_client.postMessageToGroup(SLACK_CHANNEL, message.author.username + ": " + content, {as_user: true});
+			slack_client.postMessageToGroup(SLACK_CHANNEL, '*' + message.author.username + '* : ' + content, {as_user: true});
 		} else {
-			slack_client.postMessageToChannel(SLACK_CHANNEL, message.author.username + ": " + content, {as_user: true});
+			slack_client.postMessageToChannel(SLACK_CHANNEL, '*' + message.author.username + '* : ' + content, {as_user: true});
 		}
 	}
 });
@@ -121,31 +119,32 @@ discord_client.on('message', function(message) {
 //Redirect Slack client to Discord
 slack_client.on('message', function(message) {
 	var messageToSend = message.text;
+	var isBotMessage = false;
 
-	if (message.type === "message")
-	{
+	if (message.type === 'message') {
 		//Unlike Discord, event doesn't get triggered if it is a msg we sent
 
 		//We have to find the user name/nickname by ourselves though
 		slack_client.getUsers()._value.members.forEach(function(elem){
-			
-			if (elem.id === message.user && elem.name !== 'modbot' && elem.name !== 'discordbot')
-			{
-				username = elem.name;
-				realname = elem.real_name;
-				debug("Slack  --> " + username + " (" + username + ") : " + message.text);
-				messageToSend = realname + " : " + message.text;
+			if (elem.id === message.user) {
+				if (elem.name !== 'modbot' && elem.name !== 'discordbot') {
+					username = elem.name;
+
+					debug('Slack  --> ' + username + ' : ' + message.text);
+
+					messageToSend = '**' + username + '**' + ' : ' + message.text;
+				} else {  //If it's a bot message don't send it
+					isBotMessage = true;
+				}
 			}
 
 			//If we have a user mention in the text replace it with the users name and strip out the <> characters
-			if (messageToSend.includes(elem.id))
-			{
+			if (messageToSend.includes(elem.id)) {
 				messageToSend = messageToSend.replace('<@' + elem.id + '>', '@' + elem.name);
 			}
 		});
 
-		if (messageToSend !== message.text && elem.name !== 'modbot' && elem.name !== 'discordbot')
-		{
+		if (!isBotMessage) {
 			discord_channel.send(messageToSend);
 		}
 	}
