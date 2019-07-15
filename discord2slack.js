@@ -29,7 +29,7 @@ const DISCORD_CHANNEL       = getProperty('discord.channel');
 const DISCORD_CHANNELID     = getProperty('discord.channelId');
 const SLACK_TOKEN           = getProperty('slack.token');
 const SLACK_CHANNEL         = getProperty('slack.channel');
-const SLACK_CHANNEL_PRIVATE = getProperty('slack.channel.private') === 'true';
+const SLACK_CHANNEL_PRIVATE = getProperty('slack.channel.private');
 // ------------------------------------------------------------------------------
 
 //Check if config is valid
@@ -63,15 +63,15 @@ function debug(msg) { if (DEBUG) { console.log(msg); } }
 
 discord_client.on('ready', function(){
 	//Finding the right channel where to send the messages
-	var param = DISCORD_CHANNEL !== "" ? "name" : "id";
-	var value = DISCORD_CHANNEL !== "" ? DISCORD_CHANNEL : DISCORD_CHANNELID;
+	var param = DISCORD_CHANNEL !== '' ? 'name' : 'id';
+	var value = DISCORD_CHANNEL !== '' ? DISCORD_CHANNEL : DISCORD_CHANNELID;
 	var potential_channels = discord_client.channels.findAll(param, value);
 	if (potential_channels.length === 0) {
 		console.log('Error: No Discord channels with ' + param + ' ' + value + ' found.');
 		process.exit(1);
 	}
 	if (potential_channels.length > 1) {
-		console.log('Warning: More than 1 Discord channel with ' + param +  ' + value +  found.');
+		console.log('Warning: More than 1 Discord channel with ' + param + ' ' + value + ' found.');
 		console.log('Defaulting to first one found');
 	}
 
