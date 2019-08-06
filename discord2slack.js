@@ -123,7 +123,9 @@ slack_client.on('message', function(message) {
 
 	debug(JSON.stringify(message));
 
-	if (message.type === 'message') {
+	if (message.type === 'goodbye') {
+		slack_client.login();
+	} else if (message.type === 'message') {
 		//Unlike Discord, event doesn't get triggered if it is a msg we sent
 
 		//We have to find the user name/nickname by ourselves though
