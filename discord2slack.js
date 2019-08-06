@@ -121,6 +121,8 @@ slack_client.on('message', function(message) {
 	var messageToSend = message.text;
 	var isBotMessage = false;
 
+	debug(JSON.stringify(message));
+
 	if (message.type === 'message') {
 		//Unlike Discord, event doesn't get triggered if it is a msg we sent
 
@@ -139,12 +141,12 @@ slack_client.on('message', function(message) {
 			}
 
 			//If we have a user mention in the text replace it with the users name and strip out the <> characters
-			if (messageToSend.includes(elem.id)) {
+			if (messageToSend === 'includes' && messageToSend.includes(elem.id)) {
 				messageToSend = messageToSend.replace('<@' + elem.id + '>', '@' + elem.name);
 			}
 		});
 
-		if (!isBotMessage) {
+		if (!isBotMessage && messageToSend !== undefined) {
 			discord_channel.send(messageToSend);
 		}
 	}
