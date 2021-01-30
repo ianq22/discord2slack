@@ -24,12 +24,14 @@ getProperty = (pty) => {return prop.get(pty);}
 
 const DEBUG = true;
 
-const DISCORD_TOKEN         = getProperty('discord.token');
-const DISCORD_CHANNEL       = getProperty('discord.channel');
-const DISCORD_CHANNELID     = getProperty('discord.channelId');
-const SLACK_TOKEN           = getProperty('slack.token');
-const SLACK_CHANNEL         = getProperty('slack.channel');
-const SLACK_CHANNEL_PRIVATE = getProperty('slack.channel.private');
+const DISCORD_TOKEN            = getProperty('discord.token');
+const DISCORD_CHANNEL          = getProperty('discord.channel');
+const DISCORD_CHANNELID        = getProperty('discord.channelId');
+const DISCORD_ONEWAY_CHANNEL   = getProperty('discord.oneWayChannel');
+const DISCORD_ONEWAY_CHANNELID = getProperty('discord.oneWayChannelId');
+const SLACK_TOKEN              = getProperty('slack.token');
+const SLACK_CHANNEL            = getProperty('slack.channel');
+const SLACK_CHANNEL_PRIVATE    = getProperty('slack.channel.private');
 // ------------------------------------------------------------------------------
 
 //Check if config is valid
@@ -86,9 +88,13 @@ slack_client.on('start', function() {
 
 //Redirect Discord messages to Slack
 discord_client.on('message', function(message) {
+	var channelIdList = [DISCORD_CHANNELID, DISCORD_ONEWAY_CHANNELID];
+	var channelList = [DISCORD_CHANNEL, DISCORD_ONEWAY_CHANNEL];
+
 	//Check if message is from the discord channel configured above
 	//(Thanks athyk)
-	if (message.channel.id !== DISCORD_CHANNELID && message.channel.name !== DISCORD_CHANNEL) { return; }
+	if (!channelIdList.includes(message.channel.id) && !channelList.includes(message.channel.name)) { return; }
+	
 	//Avoiding re-sending a message we just received from Slack
 	//(event gets triggered even if it's a msg *we* sent to the chat)
 	if (message.author.username != discord_client.user.username) {
